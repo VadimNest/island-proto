@@ -74,20 +74,30 @@ gltfLoader.load(
 let mixer = null
 let fox = null;
 
- gltfLoader.load(
+gltfLoader.load(
     'glTF/Fox.gltf',
     (gltf) =>
     {
-        gltf.scene.scale.set(0.005, 0.005, 0.005)
         fox = gltf.scene;
-
-        fox.position.x+=12
+        fox.scale.set(0.005, 0.005, 0.005)
         scene.add(fox)
 
         // Animation
         mixer = new THREE.AnimationMixer(fox)
         const action = mixer.clipAction(gltf.animations[1])
         action.play()
+    }
+)
+
+gltfLoader.load(
+    'duck/Duck.gltf',
+    (gltf) =>
+    {
+        let duck = gltf.scene;
+        duck.position.x = -5;
+        duck.position.z = -6;
+        duck.rotation.y = -11;
+        scene.add(duck)
     }
 )
 
@@ -218,11 +228,20 @@ const tick = () =>
     previousTime = elapsedTime
 
     if(fox) {
-        fox.position.x = Math.cos(elapsedTime*0.1) * 12
-        fox.position.z = Math.sin(elapsedTime*0.1) * 12
+        const nextX = Math.cos((elapsedTime + 0.01) * 0.1) * 12;
+        const nextZ = Math.sin((elapsedTime + 0.01) * 0.1) * 12;
 
-        fox.rotation.y = Math.cos(elapsedTime*0.1) * 12
+        fox.position.x = Math.cos(elapsedTime * 0.1) * 12;
+        fox.position.z = Math.sin(elapsedTime * 0.1) * 12;
+
+        const dx = nextX - fox.position.x;
+        const dz = nextZ - fox.position.z;
+
+        const theta = Math.atan2(dz, dx);
+
+        fox.rotation.y = -theta + 1.5;
     }
+
 
 
     //update materials

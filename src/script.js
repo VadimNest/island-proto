@@ -104,14 +104,14 @@ gltfLoader.load(
 
 // point geometry
 const firefliesGeometry = new THREE.BufferGeometry()
-const firefliesCount = 30
-const positionArray = new Float32Array(firefliesCount *3)
+const firefliesCount = 500
+const positionArray = new Float32Array(firefliesCount * 3)
 const scaleArray = new Float32Array(firefliesCount)
 
 for(let i = 0; i < firefliesCount; i++) {
-    positionArray[i * 3 + 0] = (Math.random() - 0.5) * 4
-    positionArray[i * 3 + 1] = Math.random() * 2
-    positionArray[i * 3 + 2] = (Math.random() - 0.5) * 4
+    positionArray[i * 3 + 0] = (Math.random() - 0.5) * 50
+    positionArray[i * 3 + 1] = Math.random() * 10
+    positionArray[i * 3 + 2] = (Math.random() - 0.5) * 50
 
     scaleArray[i] = Math.random()
 }

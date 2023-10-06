@@ -26,15 +26,17 @@ const canvas = document.querySelector('canvas.webgl')
 const scene = new THREE.Scene()
 
 
-const ambientLight = new THREE.AmbientLight()
-ambientLight.color = new THREE.Color(0xffffff)
+
+//light
+const ambientLight = new THREE.AmbientLight('#ffffff', 1)
 scene.add(ambientLight)
 
-/**
- * Loaders
- */
-// Texture loader
-const textureLoader = new THREE.TextureLoader()
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(3, 0.5, 5);
+directionalLight.castShadow = true;
+scene.add(directionalLight);
+
 
 // Draco loader
 const dracoLoader = new DRACOLoader()
@@ -44,27 +46,9 @@ dracoLoader.setDecoderPath('draco/')
 const gltfLoader = new GLTFLoader()
 gltfLoader.setDRACOLoader(dracoLoader)
 
-//textures
-const bakedTexture = textureLoader.load('portal-baked.jpg');
-bakedTexture.flipY = false;
-
-// //materials
-const bakedMaterial = new THREE.MeshBasicMaterial({ map: bakedTexture })
-
-//pole light material
-const poleLightMaterial = new THREE.MeshBasicMaterial({ color: 0xFF69EC })
-
 
 debugObject.portalColorStart='#52e0d7'
 debugObject.portalColorEnd = '#1ea2a4'
-
-gui
-    .addColor(debugObject, 'portalColorStart')
-    .onChange(()=> portalLightMaterial.uniforms.uColorStart.value.set(debugObject.portalColorStart))
-
-gui
-    .addColor(debugObject, 'portalColorEnd')
-    .onChange(()=> portalLightMaterial.uniforms.uColorEnd.value.set(debugObject.portalColorEnd))
 
 const portalLightMaterial = new THREE.ShaderMaterial({
     uniforms: {
@@ -77,18 +61,36 @@ const portalLightMaterial = new THREE.ShaderMaterial({
     side: THREE.DoubleSide
  })
 
-
-
-//model
 gltfLoader.load(
-    'portal-final.glb',
+    'island.glb',
     (gltf)=> {
-        const portalLightAMesh = gltf.scene.children.find((child) => child.name === 'море');
-        portalLightAMesh.material = portalLightMaterial
-
-        scene.add(gltf.scene)
+        const model = gltf.scene;
+        model.castShadow = true;
+        model.receiveShadow = true;
+        scene.add(model)
     }
 )
+
+let mixer = null
+let fox = null;
+
+ gltfLoader.load(
+    'glTF/Fox.gltf',
+    (gltf) =>
+    {
+        gltf.scene.scale.set(0.005, 0.005, 0.005)
+        fox = gltf.scene;
+
+        fox.position.x+=12
+        scene.add(fox)
+
+        // Animation
+        mixer = new THREE.AnimationMixer(fox)
+        const action = mixer.clipAction(gltf.animations[1])
+        action.play()
+    }
+)
+
 
 // point geometry
 const firefliesGeometry = new THREE.BufferGeometry()
@@ -161,7 +163,7 @@ window.addEventListener('resize', () =>
 // Base camera
 const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 0.1, 100)
 camera.position.x = 0.3
-camera.position.y = 1
+camera.position.y = 0.7
 camera.position.z = 3
 scene.add(camera)
 
@@ -170,12 +172,12 @@ const controls = new OrbitControls(camera, canvas)
 controls.enableDamping = true
 
 // Ограничиваем вращение по вертикали
-controls.minPolarAngle = Math.PI / 3;
-controls.maxPolarAngle = Math.PI / 2.3;
+controls.minPolarAngle = Math.PI / 2.5;
+controls.maxPolarAngle = Math.PI / 2.2;
 
 // Ограничиваем дальность зума
-controls.minDistance = 3; // минимальное расстояние
-controls.maxDistance = 5; // максимальное расстояние
+controls.minDistance = 19; // минимальное расстояние
+controls.maxDistance = 30; // максимальное расстояние
 
 /**
  * Renderer
@@ -187,7 +189,7 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
-debugObject.clearColor = '#009ceb'
+debugObject.clearColor = '#80d4ff'
 renderer.setClearColor(debugObject.clearColor)
 gui
     .addColor(debugObject, 'clearColor')
@@ -196,21 +198,42 @@ gui
     })
 
 
+
+// Включение теней в рендерере
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap // default THREE.PCFShadowMap
+
+
 /**
  * Animate
  */
 const clock = new THREE.Clock()
+let previousTime = 0
 
 const tick = () =>
 {
+
     const elapsedTime = clock.getElapsedTime()
+    const deltaTime = elapsedTime - previousTime
+    previousTime = elapsedTime
+
+    if(fox) {
+        fox.position.x = Math.cos(elapsedTime*0.1) * 12
+        fox.position.z = Math.sin(elapsedTime*0.1) * 12
+
+        fox.rotation.y = Math.cos(elapsedTime*0.1) * 12
+    }
+
 
     //update materials
     firefliesMaterial.uniforms.uTime.value = elapsedTime
     portalLightMaterial.uniforms.uTime.value = elapsedTime
 
+    if (mixer) mixer.update(deltaTime)
+
     // Update controls
     controls.update()
+
 
     // Render
     renderer.render(scene, camera)

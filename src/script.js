@@ -89,6 +89,25 @@ gltfLoader.load(
     }
 )
 
+let fox2 = null;
+let mixer2 = null;
+
+gltfLoader.load(
+    'glTF/Fox.gltf',
+    (gltf) =>
+    {
+        fox2 = gltf.scene;
+        fox2.scale.set(0.005, 0.005, 0.005)
+        scene.add(fox2)
+
+        // Animation
+        mixer2 = new THREE.AnimationMixer(fox2)
+        const action = mixer2.clipAction(gltf.animations[2])
+        action.play()
+    }
+)
+
+
 gltfLoader.load(
     'duck/Duck.gltf',
     (gltf) =>
@@ -222,7 +241,6 @@ let previousTime = 0
 
 const tick = () =>
 {
-
     const elapsedTime = clock.getElapsedTime()
     const deltaTime = elapsedTime - previousTime
     previousTime = elapsedTime
@@ -242,13 +260,28 @@ const tick = () =>
         fox.rotation.y = -theta + 1.5;
     }
 
+    if(fox2) {
+        const radius = 0.95; // Уменьшаем радиус
+        const nextX = Math.cos((elapsedTime + 0.01) * 0.1) * 12 * radius;
+        const nextZ = Math.sin((elapsedTime + 0.01) * 0.1) * -12 * radius;
 
+        fox2.position.x = Math.cos(elapsedTime * 0.1) * 12 * radius;
+        fox2.position.z = Math.sin(elapsedTime * 0.1) * -12 * radius;
+
+        const dx = nextX - fox2.position.x;
+        const dz = nextZ - fox2.position.z;
+
+        const theta = Math.atan2(dz, dx);
+
+        fox2.rotation.y = -theta + 1.5;
+    }
 
     //update materials
     firefliesMaterial.uniforms.uTime.value = elapsedTime
     portalLightMaterial.uniforms.uTime.value = elapsedTime
 
     if (mixer) mixer.update(deltaTime)
+    if (mixer2) mixer2.update(deltaTime)
 
     // Update controls
     controls.update()

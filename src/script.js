@@ -160,14 +160,22 @@ window.addEventListener('resize', () =>
  */
 // Base camera
 const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 0.1, 100)
-camera.position.x = 4
-camera.position.y = 2
-camera.position.z = 4
+camera.position.x = 0.3
+camera.position.y = 1
+camera.position.z = 3
 scene.add(camera)
 
 // Controls
 const controls = new OrbitControls(camera, canvas)
 controls.enableDamping = true
+
+// Ограничиваем вращение по вертикали
+controls.minPolarAngle = Math.PI / 3;
+controls.maxPolarAngle = Math.PI / 2.3;
+
+// Ограничиваем дальность зума
+controls.minDistance = 3; // минимальное расстояние
+controls.maxDistance = 5; // максимальное расстояние
 
 /**
  * Renderer

@@ -237,7 +237,9 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap // default THREE.PCFShadowMap
  * Animate
  */
 const clock = new THREE.Clock()
-let previousTime = 0
+let previousTime = 0;
+//для скорости анимации второй лисы
+let previousAzimuthalAngle = controls.getAzimuthalAngle();
 
 const tick = () =>
 {
@@ -246,11 +248,11 @@ const tick = () =>
     previousTime = elapsedTime
 
     if(fox) {
-        const nextX = Math.cos((elapsedTime + 0.01) * 0.1) * 12;
-        const nextZ = Math.sin((elapsedTime + 0.01) * 0.1) * 12;
-
         fox.position.x = Math.cos(elapsedTime * 0.1) * 12;
         fox.position.z = Math.sin(elapsedTime * 0.1) * 12;
+
+        const nextX = Math.cos((elapsedTime + 0.01) * 0.1) * 12;
+        const nextZ = Math.sin((elapsedTime + 0.01) * 0.1) * 12;
 
         const dx = nextX - fox.position.x;
         const dz = nextZ - fox.position.z;
@@ -261,12 +263,14 @@ const tick = () =>
     }
 
     if(fox2) {
-        const radius = 0.95; // Уменьшаем радиус
-        const nextX = Math.cos((elapsedTime + 0.01) * 0.1) * 12 * radius;
-        const nextZ = Math.sin((elapsedTime + 0.01) * 0.1) * -12 * radius;
+        const radius = 0.95 * 12; // Уменьшаем радиус
+        const azimuthalAngle = controls.getAzimuthalAngle() + Math.PI / 0.665; // Добавляем смещение
 
-        fox2.position.x = Math.cos(elapsedTime * 0.1) * 12 * radius;
-        fox2.position.z = Math.sin(elapsedTime * 0.1) * -12 * radius;
+        fox2.position.x = Math.cos(azimuthalAngle) * radius;
+        fox2.position.z = -Math.sin(azimuthalAngle) * radius;
+
+        const nextX = Math.cos(azimuthalAngle + 0.01) * radius;
+        const nextZ = -Math.sin(azimuthalAngle + 0.01) * radius;
 
         const dx = nextX - fox2.position.x;
         const dz = nextZ - fox2.position.z;
@@ -274,7 +278,19 @@ const tick = () =>
         const theta = Math.atan2(dz, dx);
 
         fox2.rotation.y = -theta + 1.5;
+
+        // Вычисляем скорость прокрутки как разницу между текущим и предыдущим азимутальными углами
+        const scrollSpeed = Math.abs(azimuthalAngle - previousAzimuthalAngle) * 100;
+
+        // Обновляем скорость анимации второй лисы
+        if (mixer2) mixer2.timeScale = scrollSpeed;
+
+        // Обновляем предыдущий азимутальный угол
+        console.log(azimuthalAngle);
+        previousAzimuthalAngle = azimuthalAngle;
     }
+
+
 
     //update materials
     firefliesMaterial.uniforms.uTime.value = elapsedTime
@@ -283,7 +299,6 @@ const tick = () =>
     if (mixer) mixer.update(deltaTime)
     if (mixer2) mixer2.update(deltaTime)
 
-    // Update controls
     controls.update()
 
 

@@ -46,21 +46,6 @@ dracoLoader.setDecoderPath('draco/')
 const gltfLoader = new GLTFLoader()
 gltfLoader.setDRACOLoader(dracoLoader)
 
-
-debugObject.portalColorStart='#52e0d7'
-debugObject.portalColorEnd = '#1ea2a4'
-
-const portalLightMaterial = new THREE.ShaderMaterial({
-    uniforms: {
-        uTime: {value: 0},
-        uColorStart: {value: new THREE.Color(0xffffff)},
-        uColorEnd: {value: new THREE.Color(0x31bcbf)},
-    },
-    vertexShader: portalVertexShader,
-    fragmentShader: portalFragmentShader,
-    side: THREE.DoubleSide
- })
-
 gltfLoader.load(
     'island.glb',
     (gltf)=> {
@@ -294,13 +279,11 @@ const tick = () =>
 
     //update materials
     firefliesMaterial.uniforms.uTime.value = elapsedTime
-    portalLightMaterial.uniforms.uTime.value = elapsedTime
 
     if (mixer) mixer.update(deltaTime)
     if (mixer2) mixer2.update(deltaTime)
 
     controls.update()
-
 
     // Render
     renderer.render(scene, camera)

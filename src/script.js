@@ -226,6 +226,9 @@ let previousTime = 0;
 //для скорости анимации второй лисы
 let previousAzimuthalAngle = controls.getAzimuthalAngle();
 
+let totalRotation = 0; // Общий угол поворота
+let previousRotation = 0; // Предыдущий угол поворота
+
 const tick = () =>
 {
     const elapsedTime = clock.getElapsedTime()
@@ -249,10 +252,22 @@ const tick = () =>
 
     if(fox2) {
         const radius = 0.95 * 12; // Уменьшаем радиус
-        const azimuthalAngle = controls.getAzimuthalAngle() + Math.PI / 0.665; // Добавляем смещение
+        const azimuthalAngle = controls.getAzimuthalAngle(); // Получаем азимутальный угол без смещения
 
-        fox2.position.x = Math.cos(azimuthalAngle) * radius;
-        fox2.position.z = -Math.sin(azimuthalAngle) * radius;
+        // Вычисляем разницу между текущим и предыдущим азимутальными углами
+        let deltaAngle = azimuthalAngle - previousRotation;
+
+        // Если угол перескакивает с -π на π (или наоборот), корректируем разницу
+        if (deltaAngle > Math.PI) deltaAngle -= 2 * Math.PI;
+        else if (deltaAngle < -Math.PI) deltaAngle += 2 * Math.PI;
+
+        // Обновляем общий угол поворота и сохраняем текущий азимутальный угол для следующего кадра
+        totalRotation += deltaAngle;
+        previousRotation = azimuthalAngle;
+
+        // Используем общий угол поворота для расчета позиции и ориентации лисы
+        fox2.position.x = Math.cos(totalRotation + Math.PI / 0.665) * radius;
+        fox2.position.z = -Math.sin(totalRotation + Math.PI / 0.665) * radius;
 
         const nextX = Math.cos(azimuthalAngle + 0.01) * radius;
         const nextZ = -Math.sin(azimuthalAngle + 0.01) * radius;
@@ -262,16 +277,15 @@ const tick = () =>
 
         const theta = Math.atan2(dz, dx);
 
-        fox2.rotation.y = -theta + 1.5;
+        fox2.rotation.y = -theta + 0.8;
 
-        // Вычисляем скорость прокрутки как разницу между текущим и предыдущим азимутальными углами
-        const scrollSpeed = Math.abs(azimuthalAngle - previousAzimuthalAngle) * 100;
+        // Вычисляем скорость прокрутки как абсолютное значение разницы углов
+        const scrollSpeed = Math.abs(deltaAngle) * 100;
 
         // Обновляем скорость анимации второй лисы
         if (mixer2) mixer2.timeScale = scrollSpeed;
 
         // Обновляем предыдущий азимутальный угол
-        console.log(azimuthalAngle);
         previousAzimuthalAngle = azimuthalAngle;
     }
 

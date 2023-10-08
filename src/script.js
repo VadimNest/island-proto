@@ -128,7 +128,7 @@ firefliesGeometry.setAttribute('atrScale', new THREE.BufferAttribute(scaleArray,
 const firefliesMaterial = new THREE.ShaderMaterial({
     uniforms: {
         uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) },
-        uSize: { value: 100 },
+        uSize: { value: 200 },
         uTime: { value:0 }
     },
     vertexShader: firefliesVertexShader,
@@ -203,7 +203,7 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
-debugObject.clearColor = '#80d4ff'
+debugObject.clearColor = '#0e5a5d'
 renderer.setClearColor(debugObject.clearColor)
 gui
     .addColor(debugObject, 'clearColor')

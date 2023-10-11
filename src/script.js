@@ -40,12 +40,12 @@ directionalLight.shadow.mapSize.height = 5096;
 directionalLight.shadow.camera.near = 0;
 directionalLight.shadow.camera.far = 50;
 
-directionalLight.shadow.normalBias = 0.01;
+directionalLight.shadow.normalBias = -0.000000001;
 
-directionalLight.shadow.camera.left = -30; // значение по умолчанию -5
-directionalLight.shadow.camera.right = 30; // значение по умолчанию 5
-directionalLight.shadow.camera.top = 30; // значение по умолчанию 5
-directionalLight.shadow.camera.bottom = -30; // значение по умолчанию -5
+directionalLight.shadow.camera.left = -30;
+directionalLight.shadow.camera.right = 30;
+directionalLight.shadow.camera.top = 30;
+directionalLight.shadow.camera.bottom = -30;
 directionalLight.shadow.camera.updateProjectionMatrix(); // обновляем матрицу проекции
 
 
@@ -73,7 +73,12 @@ gltfLoader.load(
     (gltf)=> {
         const model = gltf.scene;
         gltf.scene.traverse(function (child) {
-            if (child.isMesh && child.name != 'Water') {
+            if(
+                child.isMesh && child.name === 'Landscape' ||
+                child.isMesh && child.name === 'Street'
+            )
+                child.receiveShadow = true;
+            else if (child.isMesh && child.name != 'Water') {
                 child.castShadow = true;
                 child.receiveShadow = true;
             }

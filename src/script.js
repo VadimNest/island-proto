@@ -28,15 +28,37 @@ const scene = new THREE.Scene()
 
 
 //light
-const ambientLight = new THREE.AmbientLight('#ffffff', 1)
+const ambientLight = new THREE.AmbientLight(0xffffff, 1.1);
 scene.add(ambientLight)
 
 
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-directionalLight.position.set(3, 0.5, 5);
+directionalLight.position.set(30, 15, 5);
 directionalLight.castShadow = true;
+directionalLight.shadow.mapSize.width = 5096;
+directionalLight.shadow.mapSize.height = 5096;
+directionalLight.shadow.camera.near = 0;
+directionalLight.shadow.camera.far = 50;
+
+directionalLight.shadow.normalBias = 0.01;
+
+directionalLight.shadow.camera.left = -30; // значение по умолчанию -5
+directionalLight.shadow.camera.right = 30; // значение по умолчанию 5
+directionalLight.shadow.camera.top = 30; // значение по умолчанию 5
+directionalLight.shadow.camera.bottom = -30; // значение по умолчанию -5
+directionalLight.shadow.camera.updateProjectionMatrix(); // обновляем матрицу проекции
+
+
 scene.add(directionalLight);
 
+//помощник по свету
+// const helper = new THREE.DirectionalLightHelper(directionalLight, 100);
+// scene.add(helper);
+
+
+//помощник по теням
+// const helper = new THREE.CameraHelper( directionalLight.shadow.camera );
+// scene.add( helper );
 
 // Draco loader
 const dracoLoader = new DRACOLoader()
@@ -50,11 +72,17 @@ gltfLoader.load(
     'island.glb',
     (gltf)=> {
         const model = gltf.scene;
-        model.castShadow = true;
-        model.receiveShadow = true;
+        gltf.scene.traverse(function (child) {
+            if (child.isMesh && child.name != 'Water') {
+                child.castShadow = true;
+                child.receiveShadow = true;
+            }
+        });
+
         scene.add(model)
     }
 )
+
 
 let mixer = null
 let fox = null;
@@ -64,6 +92,11 @@ gltfLoader.load(
     (gltf) =>
     {
         fox = gltf.scene;
+
+        fox.traverse(function (child) {
+            if (child.isMesh) child.castShadow = true;
+        });
+
         fox.scale.set(0.005, 0.005, 0.005)
         scene.add(fox)
 
@@ -82,6 +115,11 @@ gltfLoader.load(
     (gltf) =>
     {
         fox2 = gltf.scene;
+
+        fox2.traverse(function (child) {
+            if (child.isMesh) child.castShadow = true;
+        });
+
         fox2.scale.set(0.005, 0.005, 0.005)
         scene.add(fox2)
 
@@ -101,6 +139,11 @@ gltfLoader.load(
         duck.position.x = -5;
         duck.position.z = -6;
         duck.rotation.y = -11;
+
+        duck.traverse(function (child) {
+            if (child.isMesh) child.castShadow = true;
+        });
+
         scene.add(duck)
     }
 )
@@ -215,8 +258,7 @@ gui
 
 // Включение теней в рендерере
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap // default THREE.PCFShadowMap
-
+renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
 
 /**
  * Animate

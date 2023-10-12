@@ -257,6 +257,7 @@ let previousAzimuthalAngle = controls.getAzimuthalAngle();
 
 let totalRotation = 0; // Общий угол поворота
 let previousRotation = 0; // Предыдущий угол поворота
+let bufferRotation = 0; // Предыдущий угол поворота
 
 const tick = () =>
 {
@@ -306,7 +307,13 @@ const tick = () =>
 
         const theta = Math.atan2(dz, dx);
 
-        fox2.rotation.y = -theta + 0.8;
+        if(bufferRotation < totalRotation)
+            fox2.rotation.y = -theta + 0.8;
+        else
+            fox2.rotation.y = -theta - 2.3;
+
+        bufferRotation = totalRotation;
+
 
         // Вычисляем скорость прокрутки как абсолютное значение разницы углов
         const scrollSpeed = Math.abs(deltaAngle) * 100;

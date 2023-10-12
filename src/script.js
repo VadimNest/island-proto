@@ -69,7 +69,7 @@ const gltfLoader = new GLTFLoader()
 gltfLoader.setDRACOLoader(dracoLoader)
 
 gltfLoader.load(
-    'island.glb',
+    'island-2.glb',
     (gltf)=> {
         const model = gltf.scene;
         gltf.scene.traverse(function (child) {
@@ -132,24 +132,6 @@ gltfLoader.load(
         mixer2 = new THREE.AnimationMixer(fox2)
         const action = mixer2.clipAction(gltf.animations[2])
         action.play()
-    }
-)
-
-
-gltfLoader.load(
-    'duck/Duck.gltf',
-    (gltf) =>
-    {
-        let duck = gltf.scene;
-        duck.position.x = -5;
-        duck.position.z = -6;
-        duck.rotation.y = -11;
-
-        duck.traverse(function (child) {
-            if (child.isMesh) child.castShadow = true;
-        });
-
-        scene.add(duck)
     }
 )
 

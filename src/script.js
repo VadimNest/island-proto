@@ -69,18 +69,51 @@ const gltfLoader = new GLTFLoader()
 gltfLoader.setDRACOLoader(dracoLoader)
 
 gltfLoader.load(
-    'island-2.glb',
+    'island.glb',
     (gltf)=> {
         const model = gltf.scene;
         gltf.scene.traverse(function (child) {
-            if(
-                child.isMesh && child.name === 'Landscape' ||
-                child.isMesh && child.name === 'Street'
-            )
-                child.receiveShadow = true;
-            else if (child.isMesh && child.name != 'Water') {
-                child.castShadow = true;
-                child.receiveShadow = true;
+            if(child.isMesh) {
+                if (
+                    child.name != 'Water' &&
+                    !child.name.includes('hollywood') &&
+                    !child.name.includes('heart') &&
+                    !child.name.includes('div')
+                )
+                {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                }
+                else {
+                    child.castShadow = false;
+                    child.receiveShadow = false;
+                }
+
+                if(
+                    child.name === 'Landscape' &&
+                    child.name === 'Street'
+                )
+                    child.castShadow = false;
+
+                if(
+                    child.name.includes('tree') &&
+                    child.name.includes('Cylinder')
+                )
+                {
+                    child.receiveShadow = false;
+                    child.castShadow = true;
+                }
+
+
+                if(child.name === 'Landscape') {
+                    child.material.color.set(0x6b74d9);
+                    child.castShadow = false;
+                }
+                if(child.name === 'Street') {
+                    child.material.color.set(0x425682);
+                    child.castShadow = false;
+                    child.receiveShadow = true;
+                }
             }
         });
 
@@ -233,7 +266,7 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
-debugObject.clearColor = '#0e5a5d'
+debugObject.clearColor = '#328386'
 renderer.setClearColor(debugObject.clearColor)
 gui
     .addColor(debugObject, 'clearColor')
@@ -307,6 +340,8 @@ const tick = () =>
 
         const theta = Math.atan2(dz, dx);
 
+
+        // в право или влево идем?
         if(bufferRotation < totalRotation)
             fox2.rotation.y = -theta + 0.8;
         else
